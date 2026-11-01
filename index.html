@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HQ OSINT Dashboard</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- Globe.gl Library for 3D Globe -->
+    <script src="https://unpkg.com"></script>
+    <style>
+        /* Custom dark theme adjustments */
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: monospace; }
+        .globe-container .scene-container { margin: 0 auto; }
+    </style>
+</head>
+<body class="p-4 md:p-6 min-h-screen flex flex-col gap-6">
+
+    <!-- Header -->
+    <header class="border-b border-zinc-800 pb-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold tracking-widest text-emerald-400">OSINT // COMMAND_CENTER</h1>
+            <p class="text-xs text-zinc-500 mt-1">Status: Operational | Type: Independent Frontend SPA</p>
+        </div>
+        <div class="text-right text-xs text-zinc-400">
+            <div>SYS_LOC: 6442, NL</div>
+            <div id="live-clock">00:00:00 UTC</div>
+        </div>
+    </header>
+
+    <!-- Top Section: Interactive 3D Globe Canvas -->
+    <section class="w-full bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden relative shadow-2xl">
+        <div class="p-3 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center">
+            <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">🛰️ Geospatial 3D Mesh Engine</span>
+            <div class="flex gap-2">
+                <button onclick="triggerAlert('Flight Radar Active')" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 text-[10px] rounded cursor-pointer transition">✈️ ADSB Trackers</button>
+                <button onclick="triggerAlert('Webcam Feeds Loaded')" class="px-2 py-1 bg-zinc-850 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] rounded cursor-pointer transition">🎥 Video Feeds</button>
+            </div>
+        </div>
+        <!-- Actual Globe Container -->
+        <div id="globeViz" class="w-full h-[400px] flex items-center justify-center bg-black/40"></div>
+    </section>
+
+    <!-- Bottom Section: Pavindas-Style Category Grid -->
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Category 1: Geolocation Tools -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+            <h3 class="text-sm font-bold text-emerald-400 border-b border-zinc-800 pb-2 mb-3">📍 GEOLOCATION & IMAGERY</h3>
+            <ul class="space-y-2 text-xs">
+                <li><a href="https://google.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Google Maps</span> <span class="text-zinc-600">[Satellite/Street]</span></a></li>
+                <li><a href="https://sentinel-hub.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Sentinel Hub</span> <span class="text-zinc-600">[EO Satellite]</span></a></li>
+                <li><a href="https://wikimapia.org" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Wikimapia</span> <span class="text-zinc-600">[Crowdsourced Maps]</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Category 2: Aviation & Maritime -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+            <h3 class="text-sm font-bold text-emerald-400 border-b border-zinc-800 pb-2 mb-3">✈️ AVIATION & MARITIME</h3>
+            <ul class="space-y-2 text-xs">
+                <li><a href="https://adsbexchange.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ ADSB-Exchange</span> <span class="text-zinc-600">[Unfiltered Flight]</span></a></li>
+                <li><a href="https://marinetraffic.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Marine Traffic</span> <span class="text-zinc-600">[AIS Ship Tracking]</span></a></li>
+                <li><a href="https://opensky-network.org" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ OpenSky Network</span> <span class="text-zinc-600">[Live Data API]</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Category 3: Webcams & Public Infrastructure -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+            <h3 class="text-sm font-bold text-emerald-400 border-b border-zinc-800 pb-2 mb-3">🎥 LIVE WEBCAMS & FEEDS</h3>
+            <ul class="space-y-2 text-xs">
+                <li><a href="https://windy.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Windy Webcams</span> <span class="text-zinc-600">[Global Streams]</span></a></li>
+                <li><a href="https://earthcam.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ EarthCam</span> <span class="text-zinc-600">[Public Cameras]</span></a></li>
+                <li><a href="https://webcamgalore.com" target="_blank" class="text-zinc-300 hover:text-emerald-400 flex justify-between"><span>↳ Webcam Galore</span> <span class="text-zinc-600">[Traffic/Weather]</span></a></li>
+            </ul>
+        </div>
+
+    </main>
+
+    <!-- Operational Popup Modal (For Webcam/Marker Details) -->
+    <div id="infoModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-lg max-w-md w-full relative">
+            <button onclick="closeModal()" class="absolute top-3 right-3 text-zinc-500 hover:text-zinc-300 text-sm cursor-pointer">✕ CLOSE</button>
+            <h2 id="modalTitle" class="text-sm font-bold text-emerald-400 mb-2 uppercase tracking-wide">Target Intel</h2>
+            <div id="modalContent" class="text-xs text-zinc-300 space-y-3 leading-relaxed"></div>
+        </div>
+    </div>
+
+    <!-- Active Terminal Status Bar -->
+    <footer class="mt-auto pt-4 border-t border-zinc-900 text-[10px] text-zinc-600 flex justify-between">
+        <span>Framework: Vanilla Web Components (No-Build Build)</span>
+        <span id="system-notice" class="text-emerald-700">SYSTEM READY</span>
+    </footer>
+
+    <!-- Logic Controller Scripts -->
+    <script>
+        // Update Operational Clock
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+        }, 1000);
+
+        function triggerAlert(message) {
+            const notice = document.getElementById('system-notice');
+            notice.innerText = `EXEC_MSG: ${message.toUpperCase()}`;
+            setTimeout(() => notice.innerText = 'SYSTEM READY', 3000);
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+        // Initialize 3D Globe Setup
+        const globeElement = document.getElementById('globeViz');
+        
+        // Define Custom Interactive Points (Flights & Webcams)
+        const markerPoints = [
+            { lat: 52.3676, lng: 4.9041, size: 0.15, color: '#f59e0b', type: 'Flight Track', name: 'KLM747 - Alt: 34,000ft', details: 'Origin: AMS | Speed: 480kts. Route mapping synced with ADSB network queries.' },
+            { lat: 40.7128, lng: -74.0060, size: 0.20, color: '#10b981', type: 'Webcam Node', name: 'Times Square Live Cam', details: 'Location: New York, USA.<br><br><span class="text-zinc-500">[STREAM INJECTION POINT]</span><br><iframe src="https://youtube.com" class="w-full h-40 mt-2 border border-zinc-800 rounded bg-black" allowfullscreen></iframe>' },
+            { lat: 35.6762, lng: 139.6503, size: 0.15, color: '#f59e0b', type: 'Flight Track', name: 'JA812A - Alt: 12,500ft', details: 'Approaching HND airport. Descent vector active.' },
+            { lat: 48.8566, lng: 2.3522, size: 0.20, color: '#10b981', type: 'Webcam Node', name: 'Eiffel Tower Traffic Cam', details: 'Location: Paris, France. Public stream active via municipal traffic API.' }
+        ];
+
+        const myGlobe = Globe()(globeElement)
+            .globeImageUrl('https://unpkg.com') // High performance base mesh
+            .bumpImageUrl('https://unpkg.com')
+            .pointsData(markerPoints)
+            .pointColor(d => d.color)
+            .pointAltitude(d => d.size)
+            .pointRadius(0.5)
+            .pointsMerge(false)
+            .onPointClick((point) => {
+                // Interactive Pop-up Logic
+                document.getElementById('modalTitle').innerHTML = `[${point.type}] ${point.name}`;
+                document.getElementById('modalContent').innerHTML = point.details;
+                document.getElementById('infoModal').classList.remove('hidden');
+                triggerAlert(`Inspecting Point: ${point.name}`);
+            });
+
+        // Auto-size globe to fit container
+        myGlobe.width(globeElement.clientWidth);
+        myGlobe.height(400);
+        myGlobe.controls().enableZoom = true;
+        myGlobe.controls().autoRotate = true;
+        myGlobe.controls().autoRotateSpeed = 0.4;
+
+        window.addEventListener('resize', () => {
+            myGlobe.width(globeElement.clientWidth);
+        });
+    </script>
+</body>
+</html>
